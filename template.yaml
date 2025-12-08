@@ -20,7 +20,7 @@ Resources:
   RegisterSubscriberFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: RegisterSubscriberFunction
+      CodeUri: src
       Handler: register_subscriber.lambda_handler
       Runtime: python3.12
       Timeout: 10
@@ -42,7 +42,7 @@ Resources:
   PublishMessageFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: PublishMessageFunction
+      CodeUri: src
       Handler: publish_message.lambda_handler
       Runtime: python3.12
       Timeout: 20

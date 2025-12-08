@@ -49,12 +49,13 @@ while True:
         recv_at = time.time()
         latency_ms = None
         if sent_at is not None:
+            # Raw latency (ms) based on server-side sentAt; keep signed to spot clock skew
             latency_ms = (recv_at - sent_at) * 1000.0
 
         print("=== Received message ===")
         print(json.dumps(body, indent=2))
         if latency_ms is not None:
-            print("Latency (ms):", abs(latency_ms))
+            print("Latency (ms):", latency_ms)
         else:
             print("Latency (ms):", latency_ms)
 

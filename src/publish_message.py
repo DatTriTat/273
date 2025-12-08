@@ -13,7 +13,7 @@ from utils import matches_filter
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 
-sqs = boto3.client("sqs", config=Config(max_pool_connections=20))
+sqs = boto3.client("sqs", config=Config(max_pool_connections=50))
 
 # ----- Redis client (ElastiCache) -----
 # Because your cluster has "Encryption in transit: Required",
@@ -35,7 +35,7 @@ SUB_CACHE = {}
 CACHE_TTL = 10  # seconds
 
 # Maximum number of threads for parallel SQS sends
-MAX_WORKERS = 20
+MAX_WORKERS = 50
 
 
 def get_subscribers_for_topic(topic: str):
@@ -175,10 +175,8 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "topic and data are required"}),
         }
 
-    # Respect client clock if publisher_load.py sends sentAt
-    sent_at = body.get("sentAt")
-    if sent_at is None:
-        sent_at = time.time()
+    # Use server timestamp so latency measures backend/SQS time, not client HTTP
+    sent_at = time.time()
 
     # Fetch subscribers + compiled functions (with Redis + in-Lambda cache)
     subscribers, compiled = get_subscribers_for_topic(topic)
