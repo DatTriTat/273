@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless Pub/Sub Demo on AWS
+Resources:
+  SubscribersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SubscribersTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: topic
+        AttributeType: S
+      - AttributeName: subscriberId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: topic
+        KeyType: HASH
+      - AttributeName: subscriberId
+        KeyType: RANGE
+  RegisterSubscriberFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: RegisterSubscriberFunction
+      Handler: register_subscriber.lambda_handler
+      Runtime: python3.12
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: SubscribersTable
+      Policies:
+      - AmazonDynamoDBFullAccess
+      - AmazonSQSFullAccess
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /subscribe
+            Method: post
+    Metadata:
+      SamResourceId: RegisterSubscriberFunction
+  PublishMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: PublishMessageFunction
+      Handler: publish_message.lambda_handler
+      Runtime: python3.12
+      Timeout: 20
+      MemorySize: 256
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: SubscribersTable
+          REDIS_HOST: clustercfg.pubsub-redis.3hcd0z.usw1.cache.amazonaws.com
+          REDIS_PORT: 6379
+      Policies:
+      - AmazonDynamoDBFullAccess
+      - AmazonSQSFullAccess
+      - AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds:
+        - sg-069d48bf503fe1ce4
+        SubnetIds:
+        - subnet-0b6362746f4345b78
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /publish
+            Method: post
+    Metadata:
+      SamResourceId: PublishMessageFunction
+Outputs:
+  ApiUrl:
+    Description: API Gateway base URL
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod

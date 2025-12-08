@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+.aws-sam/
+latencies_*.csv
+logs/
+subscribers.txt
+samconfig.toml
