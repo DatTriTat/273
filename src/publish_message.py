@@ -27,7 +27,6 @@ redis_client = redis.Redis(
     decode_responses=True,
 )
 
-# Keep Redis entries short-lived so topic changes propagate quickly.
 REDIS_TTL = 30  # seconds for Redis cache
 
 # In-Lambda cache:
@@ -82,7 +81,7 @@ def get_subscribers_for_topic(topic: str):
         except Exception as e:
             print(f"[CACHE] Redis SETEX failed for {redis_key}: {e}")
 
-    # Precompile functions so each message publish does not eval user code repeatedly.
+    # Precompile functions
     compiled = {}
     for sub in subs:
         fn_code = sub.get("function") or ""

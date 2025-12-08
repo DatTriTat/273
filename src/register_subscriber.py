@@ -36,7 +36,6 @@ def lambda_handler(event, context):
         }
 
     sub_id = str(uuid.uuid4())
-    # Each subscriber gets a FIFO queue so messages stay ordered per subscriber.
     queue_name = f"subscriber-{sub_id}.fifo"
 
     # create one SQS queue per subscriber
@@ -44,7 +43,7 @@ def lambda_handler(event, context):
         QueueName=queue_name,
         Attributes={
             "FifoQueue": "true",
-            "ContentBasedDeduplication": "true",
+            "ContentBasedDeduplication": "true", 
         },
     )
     queue_url = sqs_resp["QueueUrl"]

@@ -286,3 +286,8 @@ curl -X POST "$API_BASE/publish" \
 ```
 
 With these steps you can deploy the system, create topic/content/function subscribers, run client scripts, reproduce the load experiments from the paper, and analyze the results on AWS infrastructure.
+sudo yum install -y python3.11
+mkdir -p logs
+while read sub queue; do
+  python subscriber_client.py "$queue" "$sub" > logs/$sub.log &
+done < subscribers.txt

@@ -1,6 +1,5 @@
 import types
 
-
 def matches_filter(data: dict, filters: dict) -> bool:
     """
     Simple numeric/string filter:
