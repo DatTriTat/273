@@ -175,8 +175,11 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "topic and data are required"}),
         }
 
-    # Use server timestamp so latency measures backend/SQS time, not client HTTP
-    sent_at = time.time()
+    # Respect client timestamp if provided; otherwise fall back to server time
+    sent_at = body.get("sentAt")
+    if sent_at is None:
+        sent_at = time.time()
+
 
     # Fetch subscribers + compiled functions (with Redis + in-Lambda cache)
     subscribers, compiled = get_subscribers_for_topic(topic)
