@@ -29,10 +29,7 @@ CSV_FILE = f"latencies_{SUBSCRIBER_ID}.csv"
 
 
 def get_time_offset() -> float:
-    """
-    Best-effort NTP offset (seconds) so recv_at aligns closer to server time.
-    If ntplib is missing or NTP fails, return 0.0.
-    """
+    """Best effort NTP offset (seconds). Returns 0 on failure."""
     if ntplib is None:
         return 0.0
     try:
@@ -49,6 +46,7 @@ print(f"NTP time offset (s): {TIME_OFFSET:.6f}")
 
 
 def write_latency(cloud_ms, e2e_ms):
+    """Append a latency row to CSV, creating header if needed."""
     file_exists = os.path.isfile(CSV_FILE)
     with open(CSV_FILE, "a", newline="") as f:
         writer = csv.writer(f)
@@ -64,7 +62,7 @@ while True:
         QueueUrl=QUEUE_URL,
         AttributeNames=["SentTimestamp"],
         MaxNumberOfMessages=10,
-        WaitTimeSeconds=2,
+        WaitTimeSeconds=1,
     )
     messages = resp.get("Messages", [])
     if not messages:
