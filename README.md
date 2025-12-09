@@ -178,13 +178,39 @@ Each payload is:
 
 ### 4.3 `create_subs.py`
 
-Bulk-create subscribers (topic/content/function filters can be adjusted inside the script).
+Bulk-create subscribers (topic/content/function filters can be adjusted inside the script or via `payload_override`).
 
 ```bash
 python create_subs.py 50
 ```
 
 Besides printing each `subscriberId`, the script writes every `(subscriberId, queueUrl)` pair to `subscribers.txt` so you can launch the matching subscriber clients in bulk.
+
+Override examples (run from repo root):
+
+```bash
+# Multiple topics, no filter
+python - <<'PY'
+from create_subs import create_subscribers
+create_subscribers(10, {"topics": ["sports", "weather"], "filters": {}})
+PY
+
+# Content filter: temp > 30
+python - <<'PY'
+from create_subs import create_subscribers
+create_subscribers(10, {"topics": ["sports"], "filters": {"temp": ">30"}})
+PY
+
+# Function filter
+python - <<'PY'
+from create_subs import create_subscribers
+create_subscribers(10, {
+  "topics": ["sports"],
+  "filters": {},
+  "function": "lambda pub: 'goal' in pub.get('msg','').lower()",
+})
+PY
+```
 
 ### 4.4 `analyze_results.py`
 
@@ -287,7 +313,9 @@ curl -X POST "$API_BASE/publish" \
 
 With these steps you can deploy the system, create topic/content/function subscribers, run client scripts, reproduce the load experiments from the paper, and analyze the results on AWS infrastructure.
 sudo yum install -y python3.11
+find . -maxdepth 1 -name 'latencies_*.csv' -delete
+
 mkdir -p logs
 while read sub queue; do
   python subscriber_client.py "$queue" "$sub" > logs/$sub.log &
-done < subscribers.txt
+done < subs_vm4.txt
